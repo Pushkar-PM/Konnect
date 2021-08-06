@@ -1,0 +1,54 @@
+{% extends 'Users/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div>
+        {% for post in object_list %} 
+            {{ post.blogs|safe }} 
+            <button  class="btn btn-info " data-blog="{{ post.id }}">Upvote it!!</button>
+            <p class="upvotes {{ post.id }}">{{ post.upvotes.count }}</p>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block js %}
+     <script>
+         $(document).ready(function(){
+             $('.btn-info').on('click',function(){
+                 var e=$(this).data('blog');
+                //  console.log(e);
+                 $.ajax({
+                     type: "post",
+                     url: "{% url 'upvote' %}",
+                     data: {
+                         blog:e,
+                         csrfmiddlewaretoken:"{{csrf_token}}",
+                     },
+                     dataType: "json",
+                     success: function (response) {
+                         console.log(response.bool);
+                         if(response.bool==true){
+                            console.log(response);
+                            var e1=$('.'+e).text();
+                            let r=parseInt(e1);
+                            console.log(e1);
+                            r++;
+                            $('.'+e).text(r);
+                         }
+                         else{
+                            console.log(response);
+                            var e1=$('.'+e).text();
+                            let r=parseInt(e1);
+                            console.log(e1);
+                            r--;
+                            $('.'+e).text(r);
+                         }
+                     }
+                 });
+             })
+         });
+     </script>
+{% endblock js %}
+
+
+
