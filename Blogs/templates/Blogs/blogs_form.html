@@ -1,10 +1,19 @@
-{% extends 'Users/base.html' %} {% load crispy_forms_tags %} {% block content %}
-<div class="content-section">
-  <form method="POST">
-    {% csrf_token %} {{ form.media }}
-    <!-- ckeditor thing -->
+{% extends 'Users/base.html' %} 
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'Blogs/create_blog.css' %}?{% now "U" %}">
+{% endblock css %}
+
+{% block content %}
+<div class="content-section" style="display: flex; flex-direction: column;">
+  <form method="POST" style="display: flex; flex-direction: column; ">
+    
+    {% csrf_token %}
     {{ form }}
+    {{ form.media }} 
     <button class="btn btn-info" type="submit">Post</button>
   </form>
-  {% endblock content %}
 </div>
+{% endblock content %}

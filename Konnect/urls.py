@@ -19,6 +19,11 @@ from Users import views as user_views
 from django.contrib.auth import views as auth_views
 from django.conf.urls import url
 from Blogs import views as blog_views
+from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 
 # from Blogs import urls as blog_urls
 
@@ -28,5 +33,6 @@ urlpatterns = [
     path('login/',auth_views.LoginView.as_view(template_name='Users\login.html'),name='login'),
     path('logout/',auth_views.LogoutView.as_view(template_name='Users\logout.html'),name='logout'),
     path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('',include('Blogs.urls'),name='blogs')
+    path('',include('Blogs.urls'),name='blogs'),
+    # path('tp/', TemplateView.as_view(template_name="about.html")),
 ]

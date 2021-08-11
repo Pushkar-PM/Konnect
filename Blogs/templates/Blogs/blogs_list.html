@@ -1,20 +1,71 @@
 {% extends 'Users/base.html' %}
 {% load static %}
 
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="{% static 'Blogs/main.css' %}?{% now "U" %}">
+{% endblock css %}
+
+
 {% block content %}
-    <div>
-        {% for post in object_list %} 
-            {{ post.blogs|safe }} 
-            <button  class="btn btn-info " data-blog="{{ post.id }}">Upvote it!!</button>
-            <p class="upvotes {{ post.id }}">{{ post.upvotes.count }}</p>
+<div class="outer">
+    <div class="inner">
+
+        <br>
+        {% for post in blogs %}
+            <div class="card" style="width: 100%;">
+                <div class="card-body">
+                    <div style="display: flex;">
+                        <h3 class="card-title">{{ post.title }}</h3>
+                        <span class="text-muted" style="margin-left: auto; font-style: italic;">By- {{ post.author }}</span>
+                    </div>
+                    <p class="card-text">{{ post.blogs|safe }} </p>
+                    <div class="container">
+                        <button class="btn btn-primary upv" data-blog="{{ post.id }}">Upvote it!!&nbsp;&nbsp;<span class="upvotes {{ post.id }}">{{ post.upvotes.count }}</span></button>
+                        <button class="btn btn-primary com" id="{{ post.id }}" onclick="start(this.id)" style="">Comments</button>
+                    </div>
+                </div>
+            </div>
+            <div class="container container1-{{ post.id }} inactive">
+                    <textarea class="form-control text-area-{{ post.id }} width:inherit" data-blog="{{ post.id }}" placeholder="Add a Comment" style="width:500px;margin-right: 2%; margin-bottom: 2%;"></textarea>
+                    <button class="btn btn-success post" data-blog="{{ post.id }}" style="margin-bottom: 2%; margin-left: 3%;">Post It!!</button>
+                    <!-- <div class="container list-group"> -->
+                        {% for com in post.comment.all %}
+                            <article class="media content-section">
+                                <!-- <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}"> -->
+                                <div class="media-body">
+                                    <div class="article-metadata" style="margin-top: 2%;margin-left: 3%;">
+                                        <a class="mr-2" href="#">{{ com.author }}</a>
+                                    </div>
+                                    <hr style="margin-bottom: 1%;">
+                                    <p class="article-content" style="margin-left: 3%;font-weight: bolder;">{{ com.comment }}</p>
+                                </div>
+                            </article>
+                            <!-- <div class="media">
+                                <div class="media-body">
+                                    <div class="title">
+                                        <h4>{{ com.author }}</h4>
+                                    </div>
+                                    {{ com.comment }}
+                                </div>
+                            </div> -->
+                            <!-- <li class="list-group-item list-group-item-light">{{ com.comment }}</li> -->
+                        {% endfor %}
+                    <!-- </div> -->
+            </div>  
+
+           
         {% endfor %}
     </div>
+</div>
 {% endblock %}
+
+
 
 {% block js %}
      <script>
          $(document).ready(function(){
-             $('.btn-info').on('click',function(){
+             $('.upv').on('click',function(){
                  var e=$(this).data('blog');
                 //  console.log(e);
                  $.ajax({
@@ -47,7 +98,31 @@
                  });
              })
          });
+
+         $(document).ready(function(){
+             $('.post').on('click',function(){
+                 var e1=$(this).data('blog');
+                 console.log(e1);
+                 var e=$('.'+('text-area'+'-'+e1)).val();
+                 console.log(e);
+                 $.ajax({
+                     type: "post",
+                     url: "{% url 'comment' %}",
+                     data:{
+                         com:e,
+                         blog_id:e1,
+                         csrfmiddlewaretoken:"{{csrf_token}}",
+                     },
+                     dataType: "json",
+                     success: function (response) {
+                         $('.container').prepend()
+                         console.log(response);
+                     }
+                 });
+             })
+         })
      </script>
+     <script src="{% static 'Blogs/scripts.js' %}?{% now "U" %}"></script>
 {% endblock js %}
 
 
