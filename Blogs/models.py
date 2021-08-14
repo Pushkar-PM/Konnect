@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from PIL import Image
 from django.conf import settings
+from mptt.models import MPTTModel, TreeForeignKey 
 
 
 class Blogs(models.Model):
@@ -19,12 +20,22 @@ class Blogs(models.Model):
     def get_absolute_url(self):
         return reverse('blogs')
 
-class Comments(models.Model):
-    author=models.ForeignKey(User, verbose_name='', on_delete=models.CASCADE,related_name='writer')
-    post=models.ForeignKey(Blogs, verbose_name='', on_delete=models.CASCADE,related_name='comment')
-    comment=models.TextField()
 
-    # def get_absolute_url(self):
-    #     return reverse('comments',kwargs={'pk':post})
-    
+class Comment(MPTTModel):
+    author = models.ForeignKey(User, related_name='author',
+                               on_delete=models.CASCADE, default=None, blank=True)
+    post = models.ForeignKey(Blogs,
+                             on_delete=models.CASCADE,
+                             related_name='comments')
+    parent = TreeForeignKey('self', on_delete=models.CASCADE,
+                            null=True, blank=True, related_name='children')
+    content = models.TextField()
+    publish = models.DateTimeField(auto_now_add=True)
+    status = models.BooleanField(default=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['publish']
+
+
+
 

@@ -1,5 +1,5 @@
 from django.urls import path,include
-from .views import PostCreate,BlogsView,upvote,comment
+from .views import PostCreate,BlogsView,upvote
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
@@ -9,6 +9,7 @@ urlpatterns = [
     path('',BlogsView.as_view(),name="blogs"),
     # path('upvote/',views.upvote,name='upvote')
     path('upvote/',upvote.as_view(),name='upvote'),
-    path('comment/',comment.as_view(),name='comment'),
+    path('addcomment/', views.addcomment, name='addcomment'),
 
+    # path('blogcomment/',blogcomment.as_view(),name='blogcomment'),
 ]

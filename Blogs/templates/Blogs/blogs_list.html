@@ -19,39 +19,66 @@
                         <h3 class="card-title">{{ post.title }}</h3>
                         <span class="text-muted" style="margin-left: auto; font-style: italic;">By- {{ post.author }}</span>
                     </div>
-                    <p class="card-text">{{ post.blogs|safe }} </p>
+                    <p class="card-text" id="thumbs" data-value="{{ post.id }}">{{ post.blogs|safe }} </p>
                     <div class="container">
                         <button class="btn btn-primary upv" data-blog="{{ post.id }}">Upvote it!!&nbsp;&nbsp;<span class="upvotes {{ post.id }}">{{ post.upvotes.count }}</span></button>
-                        <button class="btn btn-primary com" id="{{ post.id }}" onclick="start(this.id)" style="">Comments</button>
+                        <button class="btn btn-primary com" id="{{ post.id }}" onclick="start(this.id);" style="">Comments</button>
                     </div>
                 </div>
             </div>
-            <div class="container container1-{{ post.id }} inactive">
-                    <textarea class="form-control text-area-{{ post.id }} width:inherit" data-blog="{{ post.id }}" placeholder="Add a Comment" style="width:500px;margin-right: 2%; margin-bottom: 2%;"></textarea>
-                    <button class="btn btn-success post" data-blog="{{ post.id }}" style="margin-bottom: 2%; margin-left: 3%;">Post It!!</button>
-                    <!-- <div class="container list-group"> -->
-                        {% for com in post.comment.all %}
-                            <article class="media content-section">
-                                <!-- <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}"> -->
-                                <div class="media-body">
-                                    <div class="article-metadata" style="margin-top: 2%;margin-left: 3%;">
-                                        <a class="mr-2" href="#">{{ com.author }}</a>
-                                    </div>
-                                    <hr style="margin-bottom: 1%;">
-                                    <p class="article-content" style="margin-left: 3%;font-weight: bolder;">{{ com.comment }}</p>
-                                </div>
-                            </article>
-                            <!-- <div class="media">
-                                <div class="media-body">
-                                    <div class="title">
-                                        <h4>{{ com.author }}</h4>
-                                    </div>
-                                    {{ com.comment }}
-                                </div>
-                            </div> -->
-                            <!-- <li class="list-group-item list-group-item-light">{{ com.comment }}</li> -->
-                        {% endfor %}
-                    <!-- </div> -->
+            <div class="container container1-{{ post.id }} inactive" id="{{ post.id }}">
+
+              
+              <form id="commentform" class="commentform" method="POST">
+                {% csrf_token %}
+                <select name="post" class="d-none" id="id_post">
+                  <option value="{{ post.id }}" selected="{{ post.id }}"></option> 
+                </select> <label class="small font-weight-bold"></label>
+ 
+                <div class="d-flex"> 
+                  <textarea name="content" cols="40" rows="1" class="ml-3 mb-3 form-control border-0 comment-add rounded-0" placeholder="Add a public comment" required="" id="id_content"></textarea> 
+                </div> 
+                <div class="d-flex flex-row-reverse"> 
+                <!-- <button type="button" class="btn btn-outline-secondary" onclick="formExit()">Close</button>  -->
+                  <button value="commentform" id="newcommentinner" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> 
+                </div> 
+              </form>
+
+
+
+
+        
+                        {% load mptt_tags %}
+
+                        <div class="allcommments">
+
+                            {% recursetree allcomments %}
+                            <div id="{{ node.id }}" class="my-2 p-2" style="border: 0px solid grey">
+                    
+                    
+                              <div class="d-flex justify-content-between">
+                    
+                                <div>By {{ node.author }}</div>
+                                
+                                                   
+                    
+                              </div>
+                    
+                              <div class="node-content" >{{ node.content }}</div>
+                    
+                              <div class="d-flex flex-row-reverse">
+                                <button class="btn btn-primary btn-sm" id='{{ node.id }}' onclick="myFunction(this.id)">Reply</button>
+                              </div>
+                              <hr />
+                            </div>
+                            {% if not node.is_leaf_node %}
+                            <div class="children" style="margin-left: 50px;">
+                              {{ children }}
+                            </div>
+                            {% endif %}
+                        
+                        {% endrecursetree %}
+                        </div>
             </div>  
 
            
@@ -80,47 +107,111 @@
                          console.log(response.bool);
                          if(response.bool==true){
                             console.log(response);
-                            var e1=$('.'+e).text();
+                            var e1=$('.'+e+'.upvotes').text();
                             let r=parseInt(e1);
                             console.log(e1);
                             r++;
-                            $('.'+e).text(r);
+                            $('.'+e+'.upvotes').text(r);
                          }
                          else{
                             console.log(response);
-                            var e1=$('.'+e).text();
+                            var e1=$('.'+e+'.upvotes').text();
                             let r=parseInt(e1);
                             console.log(e1);
                             r--;
-                            $('.'+e).text(r);
+                            $('.'+e+'.upvotes').text(r);
                          }
                      }
                  });
              })
          });
 
-         $(document).ready(function(){
-             $('.post').on('click',function(){
-                 var e1=$(this).data('blog');
-                 console.log(e1);
-                 var e=$('.'+('text-area'+'-'+e1)).val();
-                 console.log(e);
-                 $.ajax({
-                     type: "post",
-                     url: "{% url 'comment' %}",
-                     data:{
-                         com:e,
-                         blog_id:e1,
-                         csrfmiddlewaretoken:"{{csrf_token}}",
-                     },
-                     dataType: "json",
-                     success: function (response) {
-                         $('.container').prepend()
-                         console.log(response);
-                     }
-                 });
-             })
-         })
+
+         $(document).on('click', '#newcomment, #newcommentinner', function (e) {
+    e.preventDefault();
+
+    var button = $(this).attr("value");
+
+    var placement = "commentform"
+    if (button == "newcommentform") {
+      var placement = "newcommentform"
+    }
+    console.log(placement);
+
+    $.ajax({
+      type: 'POST',
+      url: '{% url "addcomment" %}',
+      data: $("#" + button).serialize(),
+      cache: false,
+      success: function (json) {
+        console.log(json)
+
+
+        $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
+          <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
+          <div>' + json['result'] + '</div> \
+          <hr> \
+          </div>').insertBefore('#' + placement);
+
+        $('.commentform').trigger("reset");
+        formExit()
+
+      },
+      error: function (xhr, errmsg, err) {
+
+      }
+    });
+  })
+
+  function formExit(e) {
+    e.preventDefault();
+    document.getElementById("newcommentform").remove();
+    $("#newcommentform").remove();
+  }
+
+
+
+
+
+
+
+
+  function myFunction(id) {
+    if (document.contains(document.getElementById("newcommentform"))) {
+      document.getElementById("newcommentform").remove();
+    }
+    var postid = document.getElementById('thumbs').getAttribute('data-value');
+    var d1 = document.getElementById(id);
+    d1.insertAdjacentHTML('afterend',
+      '<form id="newcommentform" class="commentform" method="post"> \
+        {% csrf_token %} \
+        <select name="post" class="d-none" id="id_post"> \
+          <option value="' + postid + '" selected="' + postid + '"></option> \
+        </select> <label class="small font-weight-bold"></label> \
+        <select name="parent" class="d-none" id="id_parent"> \
+          <option value="' + id + '" selected="' + id + '"></option> \
+        </select> \
+        <div class="d-flex"> \
+          <textarea name="content" cols="40" rows="1" class="ml-3 mb-3 form-control border-0 comment-add rounded-0" placeholder="Add a public comment" required="" id="id_content"></textarea> \
+        </div> \
+        <div class="d-flex flex-row-reverse"> \
+        <button type="button" class="btn btn-outline-secondary" onclick="formExit()">Close</button> \
+          <button value="newcommentform" id="newcommentinner" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> \
+        </div> \
+      </form>'
+    );
+  }
+
+
+
+
+
+
+
+
+
+
+        
      </script>
      <script src="{% static 'Blogs/scripts.js' %}?{% now "U" %}"></script>
 {% endblock js %}
