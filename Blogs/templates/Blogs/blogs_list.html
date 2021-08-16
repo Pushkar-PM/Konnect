@@ -8,28 +8,28 @@
 
 
 {% block content %}
+
 <div class="outer">
     <div class="inner">
 
         <br>
         {% for post in blogs %}
-            <div class="card" style="width: 100%;">
+            <div class="card" id="thumbs" data-related="{{ post.id }}" style="width: 100%;">
                 <div class="card-body">
                     <div style="display: flex;">
                         <h3 class="card-title">{{ post.title }}</h3>
                         <span class="text-muted" style="margin-left: auto; font-style: italic;">By- {{ post.author }}</span>
                     </div>
-                    <p class="card-text" id="thumbs" data-value="{{ post.id }}">{{ post.blogs|safe }} </p>
+                    <p class="card-text">{{ post.blogs|safe }} </p>
                     <div class="container">
                         <button class="btn btn-primary upv" data-blog="{{ post.id }}">Upvote it!!&nbsp;&nbsp;<span class="upvotes {{ post.id }}">{{ post.upvotes.count }}</span></button>
-                        <button class="btn btn-primary com" id="{{ post.id }}" onclick="start(this.id);" style="">Comments</button>
+                        <button class="btn btn-primary com addcomm" id="{{ post.id }}" data-com="{{ post.id }}" onclick="start(this.id);" style="">Comments</button>
                     </div>
                 </div>
             </div>
             <div class="container container1-{{ post.id }} inactive" id="{{ post.id }}">
-
               
-              <form id="commentform" class="commentform" method="POST">
+              <form id="commentform-{{ post.id }}" class="commentform" method="POST">
                 {% csrf_token %}
                 <select name="post" class="d-none" id="id_post">
                   <option value="{{ post.id }}" selected="{{ post.id }}"></option> 
@@ -40,45 +40,31 @@
                 </div> 
                 <div class="d-flex flex-row-reverse"> 
                 <!-- <button type="button" class="btn btn-outline-secondary" onclick="formExit()">Close</button>  -->
-                  <button value="commentform" id="newcommentinner" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> 
+                  <button value="commentform" data-id="{{ post.id }}" id="newcomment" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> 
                 </div> 
               </form>
-
-
-
-
-        
-                        {% load mptt_tags %}
-
-                        <div class="allcommments">
-
-                            {% recursetree allcomments %}
-                            <div id="{{ node.id }}" class="my-2 p-2" style="border: 0px solid grey">
-                    
-                    
-                              <div class="d-flex justify-content-between">
-                    
-                                <div>By {{ node.author }}</div>
-                                
-                                                   
-                    
-                              </div>
-                    
-                              <div class="node-content" >{{ node.content }}</div>
-                    
-                              <div class="d-flex flex-row-reverse">
-                                <button class="btn btn-primary btn-sm" id='{{ node.id }}' onclick="myFunction(this.id)">Reply</button>
-                              </div>
-                              <hr />
-                            </div>
-                            {% if not node.is_leaf_node %}
-                            <div class="children" style="margin-left: 50px;">
-                              {{ children }}
-                            </div>
-                            {% endif %}
-                        
-                        {% endrecursetree %}
-                        </div>
+              {% load mptt_tags %}
+              <div class="allcommments">
+                  {% recursetree post.comments.all %}
+                     <div id="{{ node.id }}" class="my-2 p-2 hello" data-related="{{ post.id }}" style="border: 0px solid grey">
+                       <div class="d-flex justify-content-between">
+                         <div>By {{ node.author }}</div>
+                       </div>
+                       <div class="node-content" >{{ node.content }} </div>
+                       <div class="d-flex flex-row-reverse">
+                         <button class="btn btn-primary btn-sm" data-g="{{ post.id }}"  id="{{ node.id }}" onclick="myFunction(this.id,this.getAttribute('data-g'))">Reply</button>
+                       </div>
+                       <hr />
+                     </div>
+                     {% if not node.is_leaf_node %}
+                     <div class="children" style="margin-left: 50px;">
+                       {{ children }}
+                     </div>
+                     {% endif %}
+                 {% endrecursetree %}
+              </div>
+              
+                 
             </div>  
 
            
@@ -128,40 +114,64 @@
 
 
          $(document).on('click', '#newcomment, #newcommentinner', function (e) {
-    e.preventDefault();
+              e.preventDefault();
 
-    var button = $(this).attr("value");
+              var button = $(this).attr("value");
+              var dataid=$(this).data('id');
 
-    var placement = "commentform"
-    if (button == "newcommentform") {
-      var placement = "newcommentform"
-    }
-    console.log(placement);
+              var placement = "commentform"
+              if (button == "newcommentform") {
+                var placement = "newcommentform"
+              }
+              console.log(placement+" "+button+" "+dataid);
+              console.log($("#"+(button+'-'+dataid)));
+              $.ajax({
+                type: 'POST',
+                url: '{% url "addcomment" %}',
+                data: $("#"+(button+'-'+dataid)).serialize(),
+                cache: false,
+                success: function (json) {
+                  console.log(json)
 
-    $.ajax({
-      type: 'POST',
-      url: '{% url "addcomment" %}',
-      data: $("#" + button).serialize(),
-      cache: false,
-      success: function (json) {
-        console.log(json)
+                  var e='#' + (placement+"-"+dataid);
+                  $(".allcomments").load(location.href + " .allcomments");
+                  console.log(e);
+                  $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
+                    <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
+                    <div>' + json['result'] + '</div> \
+                    <hr> \
+                    </div>').insertAfter('#' + (placement+"-"+dataid));
 
+                  $('.commentform').trigger("reset");
+                  formExit()
 
-        $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
-          <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
-          <div>' + json['result'] + '</div> \
-          <hr> \
-          </div>').insertBefore('#' + placement);
+                },
+                error: function (xhr, errmsg, err) {
+                    alert(errmsg);
+                }
+              });
+          })
 
-        $('.commentform').trigger("reset");
-        formExit()
+           
+          // $(document).on('click','.addcom',function(e){
+          //   var dataid=$(this).data('com');
 
-      },
-      error: function (xhr, errmsg, err) {
+          //     $.ajax({
+          //       type: "post",
+          //       url: "displaymore",
+          //       data: {
+          //         postid=e,
 
-      }
-    });
-  })
+          //       },
+          //       dataType: "dataType",
+          //       success: function (response) {
+                  
+          //       }
+          //     });
+          // })
+        
+
+          
 
   function formExit(e) {
     e.preventDefault();
@@ -176,27 +186,28 @@
 
 
 
-  function myFunction(id) {
+  function myFunction(id,m) {
     if (document.contains(document.getElementById("newcommentform"))) {
       document.getElementById("newcommentform").remove();
     }
-    var postid = document.getElementById('thumbs').getAttribute('data-value');
+    var posti = document.querySelector('.hello');
+    postid=m;
     var d1 = document.getElementById(id);
     d1.insertAdjacentHTML('afterend',
-      '<form id="newcommentform" class="commentform" method="post"> \
+      '<form id="newcommentform-'+postid+'" class="commentform" method="post"> \
         {% csrf_token %} \
         <select name="post" class="d-none" id="id_post"> \
-          <option value="' + postid + '" selected="' + postid + '"></option> \
+          <option value='+postid+' selected='+postid+'></option> \
         </select> <label class="small font-weight-bold"></label> \
         <select name="parent" class="d-none" id="id_parent"> \
-          <option value="' + id + '" selected="' + id + '"></option> \
+          <option value='+id+' selected='+id+'></option> \
         </select> \
         <div class="d-flex"> \
           <textarea name="content" cols="40" rows="1" class="ml-3 mb-3 form-control border-0 comment-add rounded-0" placeholder="Add a public comment" required="" id="id_content"></textarea> \
         </div> \
         <div class="d-flex flex-row-reverse"> \
         <button type="button" class="btn btn-outline-secondary" onclick="formExit()">Close</button> \
-          <button value="newcommentform" id="newcommentinner" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> \
+          <button value="newcommentform" id="newcommentinner" data-id='+postid+' type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> \
         </div> \
       </form>'
     );

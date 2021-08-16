@@ -11,9 +11,13 @@
 
 form {
   display: flex;
-  justify-content: center;
+  /* justify-content: center;
   align-self: center;
   align-content: center;
   height: max-content;
-  width: max-content;
+  width: max-content; */
+}
+
+body {
+  background-color: red;
 }

@@ -26,10 +26,8 @@ class BlogsView(LoginRequiredMixin,ListView):
 
     def get_context_data(self, **kwargs):
         context = super(BlogsView, self).get_context_data(**kwargs)
-        post = get_object_or_404(Blogs)     
         context['blogs'] = Blogs.objects.all()
         context['comment_form']=NewCommentForm()
-        context['allcomments']=post.comments.filter(status=True)
         # print(Blogs.pk)
         return context
 
@@ -52,6 +50,7 @@ def addcomment(request):
 
     if request.method == 'POST':
             comment_form = NewCommentForm(request.POST)
+            print(comment_form)
             if comment_form.is_valid():
                 user_comment = comment_form.save(commit=False)
                 result = comment_form.cleaned_data.get('content')
@@ -63,6 +62,26 @@ def addcomment(request):
                 print(comment_form.errors)
 
 
+
+# def displaymore(request):
+
+#     postid=0
+#     template_name='Blogs/comment.html'
+#     allcomments=''
+
+#     if request.method=='POST':
+#         postid=request.POST['postid']
+#         post=get_object_or_404(Blogs,id=postid)
+#         allcomments=post.comments.filter(status=True)
+    
+#     return render(request,'Blogs/comment.html',{'allcomments':allcomments})
+        
+
+#     def get_context_data(self, **kwargs):
+#         context = super(displaymore, self).get_context_data(**kwargs)
+#         context['allcomments']=allcomments
+#         # print(Blogs.pk)
+#         return context
 
 
 

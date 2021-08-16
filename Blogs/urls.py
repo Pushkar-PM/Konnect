@@ -10,6 +10,7 @@ urlpatterns = [
     # path('upvote/',views.upvote,name='upvote')
     path('upvote/',upvote.as_view(),name='upvote'),
     path('addcomment/', views.addcomment, name='addcomment'),
+    # path('displaymore/',views.displaymore,name="displaymore"),
 
     # path('blogcomment/',blogcomment.as_view(),name='blogcomment'),
 ]
