@@ -32,6 +32,5 @@ def register(request):
             messages.success(request,f'Login now')
             return redirect('login')
     else:
-        print("LPsajd")
         form=UserRegisterForm()
     return render(request,'Users/user.html',context)

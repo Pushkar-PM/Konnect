@@ -2,6 +2,7 @@ from django.db import models
 from ckeditor.fields import RichTextField
 from django.utils import timezone
 from django.contrib.auth.models import User
+from Users.models import Register
 from django.urls import reverse
 from PIL import Image
 from django.conf import settings
@@ -15,6 +16,7 @@ class Blogs(models.Model):
     date_posted=models.DateTimeField(default=timezone.now)
     author=models.ForeignKey(User,on_delete=models.CASCADE)
     upvotes=models.ManyToManyField(User,related_name="upv")
+    globalblog=models.BooleanField(default=False)
     # upvotes=models.ForeignKey(User, verbose_name='', on_delete=models.CASCADE,related_name='upv')
 
     def get_absolute_url(self):

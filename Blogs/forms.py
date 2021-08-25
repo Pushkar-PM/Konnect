@@ -7,7 +7,7 @@ class CreateBlogs(forms.ModelForm):
     
     class Meta:
         model = Blogs
-        fields = ("title","blogs")
+        fields = ("title","blogs","globalblog")
         widgets = {
         'title': forms.TextInput(attrs={'class': 'form-control'}),
         }

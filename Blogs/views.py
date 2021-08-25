@@ -19,8 +19,8 @@ class PostCreate(LoginRequiredMixin,CreateView):
         return super().form_valid(form)       
 
 class BlogsView(LoginRequiredMixin,ListView):
-    # context_object_name='blogs-comment'
-    paginate_by=1
+    context_object_name='blogs-comment'
+    # paginate_by=1
 
     def get_queryset(self):
         return Blogs.objects.all()
@@ -28,7 +28,8 @@ class BlogsView(LoginRequiredMixin,ListView):
 
     def get_context_data(self, **kwargs):
         context = super(BlogsView, self).get_context_data(**kwargs)
-        context['blogs'] = Blogs.objects.all()
+        print(self.request.user.register.department)
+        context['blogs'] = Blogs.objects.filter(author__register__department=self.request.user.register.department,author__register__year_of_study=self.request.user.register.year_of_study)
         context['comment_form']=NewCommentForm()
         # print(Blogs.pk)
         return context
@@ -63,27 +64,14 @@ def addcomment(request):
             else:
                 print(comment_form.errors)
 
+class Blog_global(LoginRequiredMixin,ListView):
+    template_name='blog_global.html'
+    context_object_name='blogs'
 
-
-# def displaymore(request):
-
-#     postid=0
-#     template_name='Blogs/comment.html'
-#     allcomments=''
-
-#     if request.method=='POST':
-#         postid=request.POST['postid']
-#         post=get_object_or_404(Blogs,id=postid)
-#         allcomments=post.comments.filter(status=True)
+    def get_queryset(self):
+        return Blogs.objects.filter(author__register__department=self.request.user.register.department)
     
-#     return render(request,'Blogs/comment.html',{'allcomments':allcomments})
-        
 
-#     def get_context_data(self, **kwargs):
-#         context = super(displaymore, self).get_context_data(**kwargs)
-#         context['allcomments']=allcomments
-#         # print(Blogs.pk)
-#         return context
 
 
 
