@@ -1,0 +1,12 @@
+.content-section {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+}
+
+form {
+  width: 500px;
+}
+.form-group {
+  margin-bottom: 25px;
+}

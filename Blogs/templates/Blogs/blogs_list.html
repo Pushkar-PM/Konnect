@@ -3,7 +3,7 @@
 
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="{% static 'Blogs/main.css' %}?{% now "U" %}">
+<link rel="stylesheet" type="text/css" href="{% static 'Blogs/css/main.css' %}?{% now "U" %}">
 {% endblock css %}
 
 
@@ -14,7 +14,7 @@
 
         <br>
         {% for post in blogs %}
-            <div class="card" id="thumbs" data-related="{{ post.id }}" style="width: 100%;">
+            <div class="card container" id="thumbs" data-related="{{ post.id }}" style="width: 100%;">
                 <div class="card-body">
                     <div style="display: flex;">
                         <h3 class="card-title">{{ post.title }}</h3>
@@ -114,11 +114,13 @@
 
 
          $(document).on('click', '#newcomment, #newcommentinner', function (e) {
+
+        
+           
               e.preventDefault();
 
               var button = $(this).attr("value");
               var dataid=$(this).data('id');
-
               var placement = "commentform"
               if (button == "newcommentform") {
                 var placement = "newcommentform"
@@ -134,16 +136,17 @@
                   console.log(json)
 
                   var e='#' + (placement+"-"+dataid);
-                  $(".allcomments").load(location.href + " .allcomments");
-                  console.log(e);
-                  $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
-                    <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
-                    <div>' + json['result'] + '</div> \
-                    <hr> \
-                    </div>').insertAfter('#' + (placement+"-"+dataid));
 
-                  $('.commentform').trigger("reset");
-                  formExit()
+                      $(".allcomments").load(location.href + " .allcomments");
+                      console.log(e);
+                      $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
+                        <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
+                        <div>' + json['result'] + '</div> \
+                        <hr> \
+                        </div>').insertAfter('#' + (placement+"-"+dataid));
+
+                      $('.commentform').trigger("reset");
+                      formExit()
 
                 },
                 error: function (xhr, errmsg, err) {
@@ -151,8 +154,7 @@
                 }
               });
           })
-
-           
+  
           // $(document).on('click','.addcom',function(e){
           //   var dataid=$(this).data('com');
 
@@ -224,7 +226,7 @@
 
         
      </script>
-     <script src="{% static 'Blogs/scripts.js' %}?{% now "U" %}"></script>
+     <script src="{% static 'Blogs/js/scripts.js' %}?{% now "U" %}"></script>
 {% endblock js %}
 
 

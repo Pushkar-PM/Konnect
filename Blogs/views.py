@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from .models import Blogs,Comment
 from django.views import View
 from .forms import CreateBlogs,NewCommentForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -19,6 +20,7 @@ class PostCreate(LoginRequiredMixin,CreateView):
 
 class BlogsView(LoginRequiredMixin,ListView):
     # context_object_name='blogs-comment'
+    paginate_by=1
 
     def get_queryset(self):
         return Blogs.objects.all()
